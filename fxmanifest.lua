@@ -7,7 +7,7 @@ game 'gta5'
 
 lua54 'yes'  -- ⚠️ REQUIRED for CFX Asset Escrow!
 
-author 'HM Development <contact@hm-dev.com>'
+author 'MopsScripts henry.mops89@gmail.com>'
 description 'Professional bike and scooter rental system with multi-framework support'
 version '1.0.0'
 
