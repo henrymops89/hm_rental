@@ -116,7 +116,7 @@ Config.Stations = {
     -- Legion Square
     {
         name = 'Legion Square',
-        coords = vector4(-946.92, -2705.8, 13.83, 97.3),
+        coords = vector4(-957.25, -2704.92, 13.83, 87.96),
         blip = {
             enabled = true,
             sprite = 226,
@@ -130,9 +130,9 @@ Config.Stations = {
         },
         vehicles = {'bicycle', 'scooter','automobile' },  -- Available types
         spawnPoints = {
-            vector4(-960.47, -2709.54, 13.83, 13.31),
-            vector4(-963.68, -2711.03, 13.83, 1.99),
-            vector4(-961.56, -2699.37, 13.83, 151.63),
+            vector4(-960.29, -2709.98, 13.83, 8.93),
+            vector4(-963.55, -2710.27, 13.83, 1.74),
+            vector4(-961.62, -2699.33, 13.83, 146.61),
         }
     }
 }
