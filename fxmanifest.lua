@@ -7,7 +7,7 @@ game 'gta5'
 
 lua54 'yes'  -- ⚠️ REQUIRED for CFX Asset Escrow!
 
-author 'MopsScripts henry.mops89@gmail.com>'
+author 'MopsScripts <henry.mops89@gmail.com>'
 description 'Professional bike and scooter rental system with multi-framework support'
 version '1.0.0'
 
@@ -17,10 +17,9 @@ version '1.0.0'
 
 dependencies {
     'ox_lib',
-    -- Optional framework dependencies
-    -- 'qbx_core',
-    -- 'qb-core',
-    -- 'es_extended'
+    -- Framework dependencies (uncomment your framework!)
+    '/server:7290',  -- Require at least server build 7290
+    '/onesync',      -- Require OneSync (recommended)
 }
 
 -- ═══════════════════════════════════════════════════════════════════════════
