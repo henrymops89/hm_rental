@@ -807,14 +807,30 @@ RegisterCommand('+togglevehiclelock', function()
     
     -- Show notification (only once!)
     if Config.UI.VehicleLock.showNotification then
-        local message = (newStatus == 2) and _('notify.vehicle_locked') or _('notify.vehicle_unlocked')
-        lib.notify({
-            title = (newStatus == 2) and '🔒 Abgeschlossen' or '🔓 Aufgeschlossen',
-            description = message,
-            type = 'success',
-            duration = 2000,
-            position = 'top'
-        })
+        -- Smart notification: If qbx_vehiclekeys is active and it's a car,
+        -- qbx will show its own notification, so we skip ours to avoid duplicates
+        local showOurNotification = true
+        
+        if Config.VehicleKeys == 'qbx_vehiclekeys' and not isMotorcycle then
+            -- It's a car and qbx is active - qbx will show notification
+            -- Skip ours to avoid duplicate
+            showOurNotification = false
+            
+            if Config.Debug then
+                print('^3[HM-Rental]^7 Skipping our notification (qbx will show for cars)')
+            end
+        end
+        
+        if showOurNotification then
+            local message = (newStatus == 2) and _('notify.vehicle_locked') or _('notify.vehicle_unlocked')
+            lib.notify({
+                title = (newStatus == 2) and '🔒 Abgeschlossen' or '🔓 Aufgeschlossen',
+                description = message,
+                type = 'success',
+                duration = 2000,
+                position = 'top'
+            })
+        end
     end
     
     if Config.Debug then
@@ -829,6 +845,29 @@ RegisterKeyMapping('+togglevehiclelock', 'Lock/Unlock Vehicle', 'keyboard', 'U')
 -- ═══════════════════════════════════════════════════════════════════════════
 -- DEBUG COMMANDS
 -- ═══════════════════════════════════════════════════════════════════════════
+
+RegisterCommand('checkstations', function()
+    print('^3[HM-Rental DEBUG]^7 ==========================================')
+    print('^3[HM-Rental DEBUG]^7 Config.Stations:', Config.Stations ~= nil)
+    
+    if Config.Stations then
+        print('^3[HM-Rental DEBUG]^7 Number of stations:', #Config.Stations)
+        
+        for i, station in ipairs(Config.Stations) do
+            print('^3[HM-Rental DEBUG]^7 Station ' .. i .. ':')
+            print('  Name:', station.name)
+            print('  Coords:', station.coords)
+            print('  Blip enabled:', station.blip and station.blip.enabled or false)
+            print('  PED enabled:', station.ped and station.ped.enabled or false)
+        end
+    else
+        print('^1[HM-Rental DEBUG]^7 Config.Stations is NIL!')
+    end
+    
+    print('^3[HM-Rental DEBUG]^7 Blips created:', #rentalBlips)
+    print('^3[HM-Rental DEBUG]^7 PEDs created:', #rentalPeds)
+    print('^3[HM-Rental DEBUG]^7 ==========================================')
+end, false)
 
 RegisterCommand('checkkeys', function()
     if not Config.Debug then return end
@@ -900,11 +939,23 @@ end, false)
 -- RESOURCE START/STOP
 -- ═══════════════════════════════════════════════════════════════════════════
 
-AddEventHandler('onResourceStart', function(resourceName)
-    if GetCurrentResourceName() ~= resourceName then return end
+-- ═══════════════════════════════════════════════════════════════════════════
+-- RESOURCE START/STOP HANDLERS
+-- ═══════════════════════════════════════════════════════════════════════════
+
+-- Initialize when player spawns (works for both server start AND players joining after!)
+CreateThread(function()
+    -- Wait for player to spawn
+    while not LocalPlayer.state.isLoggedIn do
+        Wait(1000)
+    end
     
-    -- Small delay to ensure everything is loaded
-    Wait(1000)
+    -- Player is now spawned, initialize stations
+    if Config.Debug then
+        print('^2[HM-Rental]^7 Player spawned, initializing stations...')
+    end
+    
+    Wait(2000) -- Give some time for everything to load
     
     -- Create blips
     createBlips()
@@ -912,7 +963,9 @@ AddEventHandler('onResourceStart', function(resourceName)
     -- Setup targets
     setupStationTargets()
     
-    print('^2[HM-Rental]^7 Client initialized successfully')
+    if Config.Debug then
+        print('^2[HM-Rental]^7 Stations initialized for player')
+    end
 end)
 
 AddEventHandler('onResourceStop', function(resourceName)
