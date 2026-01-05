@@ -12,32 +12,82 @@
 
 -- ══════════════════════════════════════════════════════════════════════════
 -- AUTO-DETECTION (if Config.Framework = 'auto')
+-- WITH ROBUST WAIT SYSTEM - Waits for framework to fully initialize
 -- ══════════════════════════════════════════════════════════════════════════
 
 if Config.Framework == 'auto' then
-    if GetResourceState('qbx_core') == 'started' or GetResourceState('qbx_core') == 'starting' then
-        Config.Framework = 'qbox'
-        if Config.Debug then
-            print('^2[Framework]^7 Auto-detected: ^3QBox^7 (qbx_core)')
+    local maxWait = 60  -- Maximum 60 seconds wait
+    local waited = 0
+    local foundFramework = false
+    
+    print('^3[HM-Rental]^7 Waiting for framework to initialize...')
+    
+    -- Wait for framework resource to be started AND fully initialized
+    while waited < maxWait and not foundFramework do
+        -- Check for QBox
+        if GetResourceState('qbx_core') == 'started' then
+            -- Wait for QBox exports to be available
+            local success = pcall(function()
+                return exports.qbx_core ~= nil
+            end)
+            
+            if success then
+                Config.Framework = 'qbox'
+                foundFramework = true
+                print('^2[HM-Rental]^7 ✅ QBox initialized after ' .. waited .. 's')
+            end
+            
+        -- Check for QBCore
+        elseif GetResourceState('qb-core') == 'started' then
+            -- Wait for QBCore exports to be available
+            local success, result = pcall(function()
+                return exports['qb-core']:GetCoreObject() ~= nil
+            end)
+            
+            if success and result then
+                Config.Framework = 'qbcore'
+                foundFramework = true
+                print('^2[HM-Rental]^7 ✅ QBCore initialized after ' .. waited .. 's')
+            end
+            
+        -- Check for ESX (es_extended)
+        elseif GetResourceState('es_extended') == 'started' then
+            -- Wait for ESX exports to be available
+            local success, result = pcall(function()
+                return exports.es_extended:getSharedObject() ~= nil
+            end)
+            
+            if success and result then
+                Config.Framework = 'esx'
+                foundFramework = true
+                print('^2[HM-Rental]^7 ✅ ESX initialized after ' .. waited .. 's')
+            end
+            
+        -- Check for ESX (esx_core - legacy)
+        elseif GetResourceState('esx_core') == 'started' then
+            Config.Framework = 'esx'
+            foundFramework = true
+            print('^2[HM-Rental]^7 ✅ ESX (legacy) initialized after ' .. waited .. 's')
         end
-    elseif GetResourceState('qb-core') == 'started' or GetResourceState('qb-core') == 'starting' then
-        Config.Framework = 'qbcore'
-        if Config.Debug then
-            print('^2[Framework]^7 Auto-detected: ^3QBCore^7 (qb-core)')
+        
+        if not foundFramework then
+            -- Wait 500ms and try again (faster checks)
+            Wait(500)
+            waited = waited + 0.5
+            
+            -- Progress indicator every 10 seconds
+            if waited % 10 == 0 then
+                print('^3[HM-Rental]^7 Still waiting for framework... (' .. waited .. 's)')
+            end
         end
-    elseif GetResourceState('es_extended') == 'started' or GetResourceState('es_extended') == 'starting' then
-        Config.Framework = 'esx'
-        if Config.Debug then
-            print('^2[Framework]^7 Auto-detected: ^3ESX^7 (es_extended)')
-        end
-    elseif GetResourceState('esx_core') == 'started' or GetResourceState('esx_core') == 'starting' then
-        Config.Framework = 'esx'
-        if Config.Debug then
-            print('^2[Framework]^7 Auto-detected: ^3ESX^7 (esx_core)')
-        end
-    else
+    end
+    
+    -- If no framework found after waiting, use fallback
+    if not foundFramework then
         Config.Framework = 'qbcore'  -- Default fallback
-        print('^3[Framework]^7 No framework detected, defaulting to ^3QBCore^7')
+        print('^1[HM-Rental]^7 ❌ No framework detected after ' .. maxWait .. 's!')
+        print('^1[HM-Rental]^7 Using fallback: QBCore')
+        print('^3[HM-Rental]^7 ⚠️  Check your server.cfg loading order!')
     end
 end
 
