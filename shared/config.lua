@@ -16,7 +16,7 @@ Config.VehicleKeys = 'qbx_vehiclekeys'  -- Oder 'none' wenn du es nicht nutzen w
 Config.VehicleKeyType = 'owned'         -- 'temporary' = nur fahren | 'owned' = volle Kontrolle (empfohlen!)
 
 -- Debug Mode
-Config.Debug = true  -- Enable for troubleshooting, disable in production
+Config.Debug = false  -- Enable for troubleshooting, disable in production
 
 -- ═══════════════════════════════════════════════════════════════════════════
 -- LOCALIZATION
